@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { FiEdit3, FiTrash } from 'react-icons/fi';
 
 import { Container } from './styles';
@@ -19,52 +19,35 @@ interface FoodProps {
   handleEditFood: (food: Foods) => void
 }
 
-interface FoodsState {
-  isAvailable: boolean
-}
+export function Food(props: FoodProps) {
+  const [isAvailable, setIsAvailable] = useState<boolean>(true);
 
-class Food extends Component<FoodProps, FoodsState> {
-  constructor(props: FoodProps) {
-    super(props);
+  useEffect(() => {
+    setIsAvailable(props.food.available)
+  },[props.food])
 
-    const { available } = this.props.food;
-    this.state = {
-      isAvailable: available
-    };
-  }
-
-  toggleAvailable = async () => {
-    const { food } = this.props;
-    const { isAvailable } = this.state;
-
-    await api.put(`/foods/${food.id}`, {
-      ...food,
+  async function toggleAvailable() {
+    await api.put(`/foods/${props.food.id}`, {
+      ...props.food,
       available: !isAvailable,
     });
-
-    this.setState({ isAvailable: !isAvailable });
+    setIsAvailable(!isAvailable);
   }
-
-  setEditingFood = () => {
-    const { food, handleEditFood } = this.props;
-
-    handleEditFood(food);
-  }
-
-  render() {
-    const { isAvailable } = this.state;
-    const { food, handleDelete } = this.props;
-
+    
+    function setEditingFood() {
+      props.handleEditFood(props.food);
+    }
+  
     return (
       <Container available={isAvailable}>
         <header>
-          <img src={food.image} alt={food.name} />
+          <img src={props.food.image} alt={props.food.name} />
         </header>
         <section className="body">
-          <h2>{food.name}</h2>
-          <p>{food.description}</p>
+          <h2>{props.food.name}</h2>
+          <p>{props.food.description}</p>
           <p className="price">
-            R$ <b>{food.price}</b>
+            R$ <b>{props.food.price}</b>
           </p>
         </section>
         <section className="footer">
@@ -72,8 +55,8 @@ class Food extends Component<FoodProps, FoodsState> {
             <button
               type="button"
               className="icon"
-              onClick={this.setEditingFood}
-              data-testid={`edit-food-${food.id}`}
+              onClick={setEditingFood}
+              data-testid={`edit-food-${props.food.id}`}
             >
               <FiEdit3 size={20} />
             </button>
@@ -81,8 +64,8 @@ class Food extends Component<FoodProps, FoodsState> {
             <button
               type="button"
               className="icon"
-              onClick={() => handleDelete(food.id)}
-              data-testid={`remove-food-${food.id}`}
+              onClick={() => props.handleDelete(props.food.id)}
+              data-testid={`remove-food-${props.food.id}`}
             >
               <FiTrash size={20} />
             </button>
@@ -91,13 +74,13 @@ class Food extends Component<FoodProps, FoodsState> {
           <div className="availability-container">
             <p>{isAvailable ? 'Disponível' : 'Indisponível'}</p>
 
-            <label htmlFor={`available-switch-${food.id}`} className="switch">
+            <label htmlFor={`available-switch-${props.food.id}`} className="switch">
               <input
-                id={`available-switch-${food.id}`}
+                id={`available-switch-${props.food.id}`}
                 type="checkbox"
                 checked={isAvailable}
-                onChange={this.toggleAvailable}
-                data-testid={`change-status-food-${food.id}`}
+                onChange={toggleAvailable}
+                data-testid={`change-status-food-${props.food.id}`}
               />
               <span className="slider" />
             </label>
@@ -106,6 +89,4 @@ class Food extends Component<FoodProps, FoodsState> {
       </Container>
     );
   }
-};
 
-export default Food;
